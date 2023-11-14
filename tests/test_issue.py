@@ -16,13 +16,13 @@ def test_get_threading():
     assert results[0].json() == {"status": "ok"}
     assert results[1].json() == {"status": "ok"}
 
-@responses.activate
 def test_get_multiprocessing():
     url = "http://fake.org/get"
-    responses.get(url, json={"status": "ok"})
-
-    with ProcessPoolExecutor() as pool:
-        r = pool.map(requests.get, [url, url])    # tries to reach non existant `http://test.org/get`
+    with responses.RequestsMock() as rsp:
+        rsp.get(url, json={"status": "ok"})
+    
+        with ProcessPoolExecutor() as pool:
+            r = pool.map(requests.get, [url, url])    # tries to reach non existant `http://test.org/get`
 
     results = list(r)
     assert len(results) == 2
